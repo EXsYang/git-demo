@@ -85,3 +85,81 @@ Hi EXsYang! You've successfully authenticated, but GitHub does not provide shell
 
 
 
+
+
+# Git 配置多个 SSH Key
+
+链接地址：https://help.gitee.com/enterprise/code-manage/%E6%9D%83%E9%99%90%E4%B8%8E%E8%AE%BE%E7%BD%AE/%E9%83%A8%E7%BD%B2%E5%85%AC%E9%92%A5%E7%AE%A1%E7%90%86/Git%E9%85%8D%E7%BD%AE%E5%A4%9A%E4%B8%AASSH-Key
+
+### 背景[](https://help.gitee.com/enterprise/code-manage/权限与设置/部署公钥管理/Git配置多个SSH-Key#背景)
+
+同时使用两个 Gitee 帐号，需要为两个帐号配置不同的 SSH Key：
+
+- 帐号 A 用于公司；
+- 帐号 B 用于个人。
+
+
+
+### 解决方法[](https://help.gitee.com/enterprise/code-manage/权限与设置/部署公钥管理/Git配置多个SSH-Key#解决方法)
+
+1. 生成帐号 A 的 SSH Key，并在帐号 A 的 Gitee 设置页面添加 SSH 公钥：
+
+```bash
+ssh-keygen -t ed25519 -C "Gitee User A" -f ~/.ssh/gitee_user_a_ed25519
+```
+
+
+
+1. 生成帐号 B 的 SSH-Key，并在帐号 B 的 Gitee 设置页面添加 SSH 公钥：
+
+```bash
+ssh-keygen -t ed25519 -C "Gitee User B" -f ~/.ssh/gitee_user_b_ed25519
+```
+
+
+
+1. 创建或者修改文件 `~/.ssh/config`，添加如下内容：
+
+```bash
+Host gt_a
+    User git
+    Hostname gitee.com
+    Port 22
+    IdentityFile ~/.ssh/gitee_user_a_ed25519
+Host gt_b
+    User git
+    Hostname gitee.com
+    Port 22
+    IdentityFile ~/.ssh/gitee_user_b_ed25519
+```
+
+
+
+1. 用 ssh 命令分别测试两个 SSH Key：
+
+```text
+$ ssh -T gt_a
+Hi Gitee User A! You've successfully authenticated, but GITEE.COM does not provide shell access.
+
+$ ssh -T gt_b
+Hi Gitee User B! You've successfully authenticated, but GITEE.COM does not provide shell access.
+```
+
+
+
+1. 拉取代码：
+
+将 `git@gitee.com` 替换为 SSH 配置文件中对应的 `Host`，如原仓库 SSH 链接为：
+
+```text
+git@gitee.com:owner/repo.git
+```
+
+
+
+使用帐号 A 推拉仓库时，需要将连接修改为：
+
+```text
+gt_a:owner/repo.git
+```
+
