@@ -1,4 +1,4 @@
-## 设置ssh代理（终极解决方案）
+## 1 设置ssh代理（终极解决方案）
 
 
 https代理存在一个局限，那就是没有办法做身份验证，每次拉取私库或者推送代码时，都需要输入github的账号和密码，非常痛苦。
@@ -69,7 +69,7 @@ Hi EXsYang! You've successfully authenticated, but GitHub does not provide shell
 
 ![img](https://raw.githubusercontent.com/EXsYang/PicGo-images-hosting/main/images/v2-0e58a44f513be7005919b320222f2985_720w.webp)
 
-##  原理部分
+###  原理部分
 
 
 代理服务器就是你的电脑和互联网的中介。当您访问外网时（如[http://google.com](https://link.zhihu.com/?target=http%3A//google.com)) , 你的请求首先转发到代理服务器，然后代理服务器替你访问外网，并将结果原封不动的给你的电脑，这样你的电脑就可以看到外网的内容啦。
@@ -87,7 +87,7 @@ Hi EXsYang! You've successfully authenticated, but GitHub does not provide shell
 
 
 
-# Git 配置多个 SSH Key
+## 2 Git 配置多个 SSH Key
 
 链接地址：https://help.gitee.com/enterprise/code-manage/%E6%9D%83%E9%99%90%E4%B8%8E%E8%AE%BE%E7%BD%AE/%E9%83%A8%E7%BD%B2%E5%85%AC%E9%92%A5%E7%AE%A1%E7%90%86/Git%E9%85%8D%E7%BD%AE%E5%A4%9A%E4%B8%AASSH-Key
 
@@ -162,4 +162,159 @@ git@gitee.com:owner/repo.git
 ```text
 gt_a:owner/repo.git
 ```
+
+
+
+## 3 github ssh 设置
+
+
+
+要想使用ssh免密连接到GitHub，需要修改配置文件如下：
+
+位置在 `C:\Users\yangd\.ssh\config`
+
+
+
+~~~
+#config文件配置
+#Windows用户，注意替换你的端口号和connect.exe的路径
+#，下面这行在使用代理的情况下，如github时需要打开
+#，在使用gitee时需要注销掉
+ProxyCommand "D:\Java_developer_tools\Git\Git\mingw64\bin\connect" -S 127.0.0.1:7890 -a none %h %p
+
+#MacOS用户用下方这条命令，注意替换你的端口号
+#ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
+
+Host github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+
+
+Host ssh.github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+~~~
+
+
+
+## 4 gitee ssh 设置
+
+~~~
+#Windows用户，注意替换你的端口号和connect.exe的路径
+#，下面这行在使用代理的情况下，如github时需要打开
+#，在使用gitee时需要注销掉
+#ProxyCommand "D:\Java_developer_tools\Git\Git\mingw64\bin\connect" -S 127.0.0.1:7890 -a none %h %p
+
+#MacOS用户用下方这条命令，注意替换你的端口号
+#ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
+
+Host github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+
+
+Host ssh.github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+  
+Host gt_a
+    User git
+    Hostname gitee.com
+    Port 22
+    IdentityFile ~/.ssh/gitee_user_a_ed25519
+	
+~~~
+
+
+
+需要配置好
+
+![image-20240212104004645](https://raw.githubusercontent.com/EXsYang/PicGo-images-hosting/main/images/image-20240212104004645.png)
+
+
+
+![image-20240212103938206](https://raw.githubusercontent.com/EXsYang/PicGo-images-hosting/main/images/image-20240212103938206.png)
+
+测试ssh免密登录是否成功如下：
+
+~~~
+yangda@F2 MINGW64 /d/Java_developer_tools/GiteeRepository/gitee_hsp_java/新建文件夹/daqiao-java-project-001 (master)
+$ ssh -T gt_a
+Hi CodeYang(@kapaiya)! You've successfully authenticated, but GITEE.COM does not provide shell access.
+
+~~~
+
+注意：使用gitee免密登录不可以使用代理，同时需要把生成的公钥配置的gitee
+
+即使开着clash也可以使用gitee ssh免密登录，注销上面这一行，同时需要在该文件中配置过gitee的Host，
+
+​								，如下面这种样式的
+
+~~~
+Host gt_a
+    User git
+    Hostname gitee.com
+    Port 22
+    IdentityFile ~/.ssh/gitee_user_a_ed25519
+~~~
+
+![image-20240212105007023](https://raw.githubusercontent.com/EXsYang/PicGo-images-hosting/main/images/image-20240212105007023.png)
+
+
+
+
+
+## 5 C:\Users\yangd\.ssh\config 文件的最终配置
+
+~~~
+#Windows用户，注意替换你的端口号和connect.exe的路径
+#，下面这行在使用代理的情况下，如github时需要打开
+#，在使用gitee时需要注销掉
+#，最好使用github时将下面这行打开才好，但是不打开也行，clash使用TUN模式，偶尔也能ssh连接上
+#ProxyCommand "D:\Java_developer_tools\Git\Git\mingw64\bin\connect" -S 127.0.0.1:7890 -a none %h %p
+
+
+#MacOS用户用下方这条命令，注意替换你的端口号
+#ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
+
+Host github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+
+
+Host ssh.github.com
+  User git
+  Port 443
+  Hostname ssh.github.com
+  # 注意修改路径为你的路径
+  IdentityFile "C:\Users\yangd\.ssh\github01_id_rsa"
+  TCPKeepAlive yes
+  
+Host gt_a
+    User git
+    Hostname gitee.com
+    Port 22
+    IdentityFile ~/.ssh/gitee_user_a_ed25519
+	
+~~~
 
